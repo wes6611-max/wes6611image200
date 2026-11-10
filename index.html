@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="fr"><head><style>
+@font-face {
+  font-family: "Optimistic";
+  font-style: normal;
+  font-weight: 400 600;
+  font-display: swap;
+  src: url("/fonts/OptimisticAI_VF_Optimized.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Optimistic Mono";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("/fonts/OptimisticMono_W_TextRegular.woff2") format("woff2");
+}
+:where(html) {
+  font-family: "Optimistic", system-ui, sans-serif;
+}
+:where(code, pre, kbd, samp) {
+  font-family: "Optimistic Mono", ui-monospace, monospace;
+}
+</style><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Art Studio · Artistes Modernes</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/dexie@3.2.7/dist/dexie.min.js"></script>
+<style>
+:root{--ink:#0b0f17;--ink2:#4a5568;--ink3:#8591a3;--line:#d9dfe8;--acc:#00a6c8;--acc2:#6a3df0;--ok:#12a36b;--bad:#d1334a;--warn:#c98a00;--mono:'JetBrains Mono',ui-monospace,monospace;--disp:'Orbitron',system-ui,sans-serif;--ar:9/16}
+body{background:#fff;color:var(--ink);font:14px/1.55 system-ui,sans-serif;min-height:100vh;padding-bottom:90px;background-image:linear-gradient(rgba(0,166,200,.07) 1px,transparent 1px),linear-gradient(90deg,rgba(0,166,200,.07) 1px,transparent 1px),radial-gradient(circle at 88% -8%,rgba(106,61,240,.13),transparent 40%),radial-gradient(circle at 0 32%,rgba(0,166,200,.13),transparent 35%);background-size:32px 32px,32px 32px,auto,auto;background-attachment:fixed}
+.form-control,.form-select,.btn{border-radius:0;font-size:13px}
+.form-control:focus,.form-select:focus{border-color:var(--acc);box-shadow:0 0 0 3px rgba(0,166,200,.15)}
+#top{position:sticky;top:0;z-index:50;display:flex;align-items:center;gap:.8rem;padding:.55rem 1.1rem;background:rgba(255,255,255,.94);backdrop-filter:blur(10px);border-bottom:1px solid var(--line);font:11px var(--mono)}
+#top::after{content:"";position:absolute;bottom:-1px;left:0;height:1px;width:30%;background:linear-gradient(90deg,transparent,var(--acc),transparent);animation:scan 4s linear infinite}
+@keyframes scan{from{left:-30%}to{left:100%}}
+.logo{font:900 .8rem var(--disp);letter-spacing:.2em}.logo i{color:var(--acc);font-style:normal}
+#mode{padding:.15rem .55rem;border:1px solid var(--line);color:var(--ink3);font-weight:700;font-size:.64rem;letter-spacing:.1em}
+#mode.live{border-color:var(--ok);color:var(--ok)}
+#gstat{flex:1;color:var(--ink2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.dot{display:inline-block;width:6px;height:6px;background:var(--ok);border-radius:50%;margin-right:.3rem;animation:blink 1.6s infinite}
+@keyframes blink{50%{opacity:.2}}
+.hero{display:flex;align-items:center;gap:1.2rem;padding:1.4rem 0 .6rem}
+.ring{width:96px;flex:none;animation:rot 40s linear infinite}@keyframes rot{to{transform:rotate(360deg)}}
+h1{font:900 clamp(1.5rem,4vw,2.3rem) var(--disp);letter-spacing:.08em;margin:0;background:linear-gradient(90deg,var(--ink),var(--acc2) 60%,var(--acc));-webkit-background-clip:text;background-clip:text;color:transparent}
+.sub{font:11px var(--mono);color:var(--ink2);letter-spacing:.06em}
+.hud{position:relative;background:rgba(255,255,255,.88);border:1px solid var(--line);padding:1.3rem 1.1rem 1rem;margin:1.1rem 0;backdrop-filter:blur(6px)}
+.hud::before,.hud::after{content:"";position:absolute;width:14px;height:14px;border:2px solid var(--acc);pointer-events:none}
+.hud::before{top:-1px;left:-1px;border-right:0;border-bottom:0}.hud::after{bottom:-1px;right:-1px;border-left:0;border-top:0}
+.tag{position:absolute;top:-9px;left:18px;background:#fff;padding:0 .5rem;font:700 .62rem var(--mono);letter-spacing:.18em;color:var(--acc)}
+.lab{display:block;font:700 .62rem var(--mono);letter-spacing:.14em;color:var(--ink2);text-transform:uppercase;margin:.7rem 0 .3rem}
+.ruler{height:6px;background:repeating-linear-gradient(90deg,var(--line) 0 1px,transparent 1px 8px);margin:.8rem 0 0}
+.drop{position:relative;border:1px dashed var(--ink3);padding:.9rem;text-align:center;cursor:pointer;font:11px var(--mono);color:var(--ink2)}
+.drop:hover,.drop.ov{border-color:var(--acc);background:rgba(0,166,200,.06)}
+.drop input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%}
+.pv{position:relative;display:inline-block;max-width:150px;margin-top:.6rem}.pv img{max-width:100%;border:1px solid var(--line);display:block}
+.pv button{position:absolute;top:3px;right:3px;width:22px;height:22px;border:0;background:var(--bad);color:#fff;cursor:pointer}
+.btn-go{width:100%;min-height:50px;margin-top:1rem;border:0;background:var(--ink);color:#fff;font:700 .85rem var(--disp);letter-spacing:.2em;cursor:pointer;clip-path:polygon(12px 0,100% 0,100% calc(100% - 12px),calc(100% - 12px) 100%,0 100%,0 12px)}
+.btn-go:hover:not(:disabled){background:var(--acc2)}.btn-go:disabled{opacity:.5;cursor:not-allowed}
+.status{margin-top:.6rem;padding:.5rem .8rem;font:12px var(--mono);background:#f3f5f8;border-left:3px solid var(--line);word-break:break-word}
+.status.ok{border-color:var(--ok);color:var(--ok)}.status.err{border-color:var(--bad);color:var(--bad)}.status.warn{border-color:var(--warn);color:var(--warn)}
+.spin{display:inline-block;width:11px;height:11px;border:2px solid rgba(0,166,200,.25);border-top-color:var(--acc);border-radius:50%;animation:rot .8s linear infinite;vertical-align:middle}
+.step{display:flex;align-items:center;gap:.5rem;padding:.25rem 0;font:12px var(--mono);color:var(--ink3)}
+.step .dot{width:18px;height:18px;margin:0;border:1px solid currentColor;border-radius:0;background:none;animation:none;display:inline-flex;align-items:center;justify-content:center;font-size:.6rem}
+.step.active{color:var(--acc2)}.step.active .dot{background:var(--acc2);color:#fff}
+.step.done{color:var(--ok)}.step.done .dot{background:var(--ok);color:#fff}
+.step.error{color:var(--bad)}.step.error .dot{background:var(--bad);color:#fff}.step.skip{opacity:.4}
+.step .time{margin-left:auto}
+.ana{margin-top:.6rem;padding:.6rem .8rem;background:#f3f5f8;font:11px/1.5 var(--mono);color:var(--ink2);white-space:pre-wrap;max-height:170px;overflow:auto}
+.pr{display:flex;align-items:center;gap:.7rem;margin:.3rem 0;font:11px var(--mono);color:var(--ink2)}
+.pr .k{min-width:64px;text-transform:uppercase;color:var(--ink3)}.pr .v{min-width:90px;text-align:right;font-weight:700;color:var(--ink)}
+.bar{flex:1;height:6px;background:#eceff3;position:relative;overflow:hidden}.bar i{display:block;height:100%;width:0;transition:width .4s;background:linear-gradient(90deg,var(--acc),var(--acc2))}
+.bar.r i{background:var(--acc)}.bar.e i{background:var(--bad)}
+.brow{display:flex;gap:.6rem;align-items:center;padding:.45rem .7rem;border:1px solid var(--line);margin-bottom:.35rem;background:#fff;cursor:pointer;font:12px var(--mono)}
+.brow:hover,.brow.on{border-color:var(--acc)}.brow .bt{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:.9rem}
+.img-cell{position:relative;background:#fff;border:1px solid var(--line);padding:.6rem;display:flex;flex-direction:column;gap:.4rem}
+.img-cell::before{content:"";position:absolute;top:-1px;right:-1px;width:10px;height:10px;border:2px solid var(--acc);border-left:0;border-bottom:0}
+.ic-h{display:flex;align-items:center;gap:.4rem}.ic-n{flex:1;min-width:0;font:700 .85rem var(--disp);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ic-c{font:700 .56rem var(--mono);padding:.12rem .4rem;border:1px solid var(--acc2);color:var(--acc2);text-transform:uppercase}.ic-c.mix{border-color:var(--acc);color:var(--acc)}
+.ic-img,.v-img{aspect-ratio:var(--ar);background:#eceff3;overflow:hidden;display:flex;align-items:center;justify-content:center}
+.ic-img img,.v-img img{width:100%;height:100%;object-fit:cover;cursor:zoom-in;animation:fade .4s}@keyframes fade{from{opacity:0}}
+.ph{font:11px var(--mono);color:var(--ink3);text-align:center;padding:.7rem}.ph.err{color:var(--bad)}
+.ph.shim{width:100%;height:100%;display:flex;align-items:center;justify-content:center;gap:.4rem;background:linear-gradient(110deg,#eceff3 30%,#fff 50%,#eceff3 70%);background-size:200% 100%;animation:shim 1.4s linear infinite}
+@keyframes shim{to{background-position:-200% 0}}
+summary{cursor:pointer;font:700 .68rem var(--mono);color:var(--acc2);padding:.2rem 0}
+.ic-p{width:100%;min-height:90px;margin-top:.3rem;font:11px/1.4 var(--mono)}
+.act{display:flex;gap:.3rem;margin-top:.3rem;flex-wrap:wrap}
+.mini{border:1px solid var(--line);background:#fff;font:.66rem var(--mono);padding:.25rem .55rem;cursor:pointer}.mini:hover{border-color:var(--acc);color:var(--acc)}
+.version{border:1px solid var(--line);padding:.4rem;margin-top:.3rem;background:#f8f9fb}.version .vh{font:10px var(--mono);color:var(--ink3);margin-bottom:.2rem}
+.pager{display:flex;align-items:center;justify-content:center;gap:.3rem;padding:1rem 0;flex-wrap:wrap}
+.pg{min-width:34px;height:34px;border:1px solid var(--line);background:#fff;font:700 .75rem var(--mono);cursor:pointer}
+.pg:hover:not(:disabled){border-color:var(--acc);color:var(--acc)}.pg.on{background:var(--ink);color:#fff;border-color:var(--ink)}.pg:disabled{opacity:.35;cursor:not-allowed}
+.inf{font:11px var(--mono);color:var(--ink3);margin:0 .4rem}
+#lb{position:fixed;inset:0;z-index:300;display:none;align-items:center;justify-content:center;background:rgba(255,255,255,.96);cursor:zoom-out}#lb.on{display:flex}
+#lb img{max-height:92vh;max-width:94vw;border:1px solid var(--line);box-shadow:0 20px 60px rgba(11,15,23,.2)}
+#lbDl{position:absolute;top:14px;right:18px;padding:.35rem .7rem;background:var(--ink);color:#fff;font:11px var(--mono);text-decoration:none}
+#keyBtn{position:fixed;right:16px;bottom:16px;z-index:61;width:50px;height:50px;border:1px solid var(--acc);background:#fff;font-size:1.2rem;cursor:pointer;box-shadow:0 8px 24px rgba(0,166,200,.25)}
+#drawer{position:fixed;right:16px;bottom:78px;z-index:60;width:min(540px,94vw);max-height:70vh;overflow:auto;display:none;background:#fff;border:1px solid var(--acc);padding:1rem;box-shadow:0 16px 50px rgba(11,15,23,.18)}#drawer.on{display:block}
+#keys{min-height:150px;font:12px/1.5 var(--mono)}
+#toast{position:fixed;top:58px;left:50%;transform:translate(-50%,-140px);z-index:200;opacity:0;transition:.3s;background:#fff;border:1px solid var(--line);border-left:3px solid var(--acc);padding:.6rem 1rem;font:12px var(--mono);max-width:92vw}
+#toast.on{transform:translate(-50%,0);opacity:1}#toast.ok{border-left-color:var(--ok)}#toast.err{border-left-color:var(--bad)}
+
+<style>
+.chips{display:flex;flex-wrap:wrap;gap:.4rem;margin:.4rem 0}
+.chip{border:1px solid var(--line);background:#fff;font:.68rem var(--mono);padding:.35rem .7rem;cursor:pointer;user-select:none}
+.chip:hover{border-color:var(--acc);color:var(--acc)}
+.chip.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+.chip.style.on{background:var(--acc2);border-color:var(--acc2)}
+.chip.genre.on{background:#d1334a;border-color:#d1334a}
+.artist-picker{max-height:280px;overflow:auto;border:1px solid var(--line);padding:.6rem;background:#fff}
+.artist-item{display:flex;align-items:center;gap:.5rem;padding:.3rem .4rem;border-bottom:1px solid #f0f0f0;font:12px var(--mono);cursor:pointer}
+.artist-item:hover{background:#f8f9fb}
+.artist-item input{accent-color:var(--acc2)}
+.artist-item .cat{font-size:.58rem;padding:.1rem .35rem;border:1px solid var(--line);color:var(--ink3);text-transform:uppercase}
+.artist-item .st{color:var(--ink2);font-size:.62rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}
+</style>
+</style></head><body>
+<header id="top"><span class="logo">ART<i>//</i>STUDIO</span><span id="mode">NON CONFIGURÉ</span><span id="gstat">Ajoutez vos clés API (🔑)</span><span><span class="dot"></span>IndexedDB · <b id="usage">0 Mo</b></span><span id="clk"></span></header>
+<main class="container-xxl">
+<div class="hero"><svg class="ring" viewBox="0 0 120 120"><circle cx="60" cy="60" r="56" fill="none" stroke="#00a6c8" stroke-width=".6" stroke-dasharray="2 4"/><circle cx="60" cy="60" r="42" fill="none" stroke="#6a3df0" stroke-width=".9" stroke-dasharray="30 8"/><circle cx="60" cy="60" r="26" fill="none" stroke="#0b0f17" stroke-width=".5"/><path d="M60 2v16M60 102v16M2 60h16M102 60h16" stroke="#00a6c8"/><circle cx="60" cy="60" r="3" fill="#00a6c8"/></svg>
+<div><h1>ART STUDIO</h1><div class="sub">SYS.04 // 1 PROMPT OU 1 IMAGE → ESSENCE → ARTISTES MODERNES + MIXES → ŒUVRES ORIGINALES</div></div></div>
+<section class="hud"><span class="tag">01 // ENTRÉE</span>
+<label class="lab">Prompt / description (optionnel)</label>
+<textarea id="prompt" class="form-control" rows="3" placeholder="Ex : une femme rousse en manteau noir, regard perçant, assise dans un café parisien sous la pluie…"></textarea>
+<label class="lab">Image de référence (optionnel)</label>
+<div class="drop" id="drop"><input type="file" id="imgIn" accept="image/*">📷 Cliquez ou glissez une image</div>
+<div id="pv"></div>
+<div class="form-check mt-2"><input class="form-check-input" type="checkbox" id="skip" checked><label class="form-check-label" for="skip" style="font:11px var(--mono)">⚡ Si prompt fourni, ignorer l’analyse d’image (obligatoire sans prompt)</label></div>
+<div class="row g-2">
+<div class="col-6 col-md-3"><label class="lab">Artistes modernes</label><input type="number" id="nF" class="form-control" value="60" min="1" max="500"></div>
+<div class="col-6 col-md-3"><label class="lab">Mixes</label><input type="number" id="nM" class="form-control" value="30" min="0" max="500"></div>
+<div class="col-4 col-md-2"><label class="lab">Workers</label><select id="workers" class="form-select"><option>4</option><option selected>2</option><option>6</option><option>8</option><option>12</option><option>16</option></select></div>
+<div class="col-4 col-md-2"><label class="lab">Ratio</label><select id="ratio" class="form-select"><option value="9:16" selected>9:16</option><option>3:4</option><option>2:3</option><option>1:1</option><option>16:9</option></select></div>
+<div class="col-4 col-md-2"><label class="lab">Taille</label><select id="size" class="form-select"><option selected>1K</option><option>2K</option></select></div>
+</div>
+<label class="lab">🎨 1 · Choisis tes artistes manuellement (sinon tirage auto)</label>
+<div class="d-flex gap-2 flex-wrap mb-2">
+<input id="artistSearch" class="form-control form-control-sm" style="max-width:280px" placeholder="🔍 Rechercher un artiste : banksy, warhol...">
+<button class="btn btn-outline-dark btn-sm" id="selAll">✓ Tout sélectionner</button>
+<button class="btn btn-outline-dark btn-sm" id="selNone">✕ Tout désélectionner</button>
+<button class="btn btn-outline-dark btn-sm" id="selPhoto">📸 Seulement photo-réalistes</button>
+<span id="selCount" class="sub align-self-center">0 artiste sélectionné → tirage auto</span>
+</div>
+<div id="artistList" class="artist-picker"></div>
+<div class="sub mt-1">Astuce : coche 5-10 artistes pour un test, 30-60 pour un gros batch. Si tu n'en coches aucun, l'app tire au hasard dans le vivier.</div>
+
+<label class="lab">🎬 2 · Choisis ton / tes styles (cliquable, plusieurs possibles)</label>
+<div id="styleChips" class="chips"></div>
+
+<label class="lab">🎭 3 · Choisis ton / tes genres (cliquable, plusieurs possibles)</label>
+<div id="genreChips" class="chips"></div>
+
+<label class="lab">Vivier d'artistes modernes</label>
+<select id="pool" class="form-select"><option value="all" selected>Tous les modernes</option><option value="photo">Photo-réaliste / hyperréaliste — le plus proche d'une vraie photo</option><option value="photoportrait">Portraitistes photo-réalistes</option><option value="street">Street art / urbain</option><option value="pop">Pop / néo-pop</option><option value="contemporary">Contemporain / galerie</option></select>
+<div class="form-check mt-2"><input class="form-check-input" type="checkbox" id="keepFace" checked><label class="form-check-label" for="keepFace" style="font:11px var(--mono)">🧑 Garder le visage / l'identité de la photo</label></div>
+<label class="lab">Fidélité visage — à mettre à 90-100% pour un portrait</label>
+<select id="fidelity" class="form-select"><option value="100" selected>100% — Copie fidèle (même visage, même pose)</option><option value="85">85% — Fidèle + léger style</option><option value="70">70% — Style visible, visage reconnaissable</option><option value="50">50% — Style fort, visage approximatif</option></select>
+<div class="form-check mt-2"><input class="form-check-input" type="checkbox" id="photoStrict" checked><label class="form-check-label" for="photoStrict" style="font:11px var(--mono)">📸 Mode PHOTO STRICT — interdit peinture / cartoon / déformation (recommandé)</label></div>
+<div class="form-check mt-2"><input class="form-check-input" type="checkbox" id="noMixFace" checked><label class="form-check-label" for="noMixFace" style="font:11px var(--mono)">🚫 Pas de mixes sur les visages — mixes = déformation assurée</label></div>
+<div class="form-check mt-2"><input class="form-check-input" type="checkbox" id="autoRetry" checked><label class="form-check-label" for="autoRetry" style="font:11px var(--mono)">🔁 Re-essai auto des erreurs (3x, avec pause)</label></div>
+<button class="btn-go" id="go">LANCER LA GÉNÉRATION</button>
+<div id="status" class="status">Prêt. Configurez vos clés (🔑 en bas à droite).</div>
+<div class="mt-2" id="steps">
+<div class="step" id="s-create"><span class="dot">1</span>Création du batch<span class="time"></span></div>
+<div class="step" id="s-analyze"><span class="dot">2</span>Extraction de l’essence<span class="time"></span></div>
+<div class="step" id="s-artists"><span class="dot">3</span>Recherche d’artistes modernes<span class="time"></span></div>
+<div class="step" id="s-mixes"><span class="dot">4</span>Génération des mixes<span class="time"></span></div>
+<div class="step" id="s-prompt"><span class="dot">5</span>Prompts prêts<span class="time"></span></div>
+</div>
+<div id="ana" class="ana d-none"></div>
+<div class="d-flex gap-2 flex-wrap mt-3">
+<button class="btn btn-outline-success d-none" id="pause">⏸ Pause</button>
+<button class="btn btn-outline-dark d-none" id="resume">▶ Reprendre</button>
+<button class="btn btn-outline-danger d-none" id="stop">⏹ Stop</button>
+<button class="btn btn-outline-dark" id="retry">↻ Relancer les erreurs</button>
+<button class="btn btn-outline-dark" id="reset">🗑 Reset tout</button>
+</div><div class="ruler"></div></section>
+<section class="hud"><span class="tag">02 // TÉLÉMÉTRIE</span>
+<div class="pr"><span class="k">Images</span><div class="bar"><i id="barD"></i></div><span class="v" id="stD">0 / 0</span></div>
+<div class="pr"><span class="k">En cours</span><div class="bar r"><i id="barR"></i></div><span class="v" id="stR">0</span></div>
+<div class="pr"><span class="k">Erreurs</span><div class="bar e"><i id="barE"></i></div><span class="v" id="stE">0</span></div>
+<div id="eta" class="sub mt-2"></div><div id="binfo" class="sub"></div></section>
+<details class="hud"><summary class="tag" style="font-size:.62rem">03 // HISTORIQUE</summary><div id="hist" class="mt-2"></div></details>
+<div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mt-4">
+<h2 class="m-0" style="font:700 1rem var(--disp);letter-spacing:.15em">GALERIE</h2>
+<div class="d-flex gap-2">
+<select id="gf" class="form-select form-select-sm"><option value="all">Tous</option><option value="modern">Modernes</option><option value="mix">Mixes</option><option value="done">Terminés</option><option value="error">Erreurs</option></select>
+<select id="pp" class="form-select form-select-sm"><option>8</option><option selected>12</option><option>20</option><option>40</option></select>
+</div></div>
+<div id="grid" class="grid mt-3"></div>
+<div id="empty" class="text-center sub p-4">Aucune image.</div>
+<div id="pager" class="pager"></div></main>
+<div id="lb"><a id="lbDl" href="#" download="art.png" target="_blank" rel="noopener">⬇ Télécharger</a><img id="lbi" alt=""></div>
+<button id="keyBtn" title="Clés API">🔑</button>
+<div id="drawer"><div class="d-flex align-items-center gap-2 mb-1"><b style="font:700 .8rem var(--disp)">CLÉS API AGNÈS</b><span id="ksum" class="sub flex-fill"></span></div>
+<p class="sub">Une par ligne : <code>sk-xxxx 10</code> (RPM indicatif, défaut 10). Stockées uniquement dans ce navigateur.</p>
+<textarea id="keys" class="form-control" placeholder="sk-xxxxxxxxxxxxxxxxxxxx 10"></textarea>
+<div class="d-flex gap-2 mt-2 flex-wrap"><button class="btn btn-outline-dark" id="kSave">💾 Enregistrer</button><button class="btn btn-outline-dark" id="kTest">✓ Tester</button><button class="btn btn-outline-dark" id="kClose">Fermer</button></div>
+<div id="kStat" class="status">Aucune clé</div></div>
+<div id="toast"></div>
+<script>
+'use strict';
+
+const $=i=>document.getElementById(i),esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])),sleep=ms=>new Promise(r=>setTimeout(r,ms));
+const BASE='https://apihub.agnes-ai.com/v1',TXT='agnes-3.0-flash',TXT2='agnes-2.5-flash',IMG='agnes-image-2.5-flash',THUMB=360,ST=['create','analyze','artists','mixes','prompt'];
+const MODERN_ARTISTS=[
+{name:"Chuck Close",cat:"photoportrait",style:"portrait hyperrealiste en grille, peau, pores, regard frontal, rendu photo"},
+{name:"Richard Estes",cat:"photo",style:"photorealisme urbain, reflets, vitrines, nettete photographique"},
+{name:"Ralph Goings",cat:"photo",style:"photorealisme americain, diner, voitures, lumiere crue, rendu photo"},
+{name:"Robert Bechtle",cat:"photo",style:"photorealisme californien, voitures, maisons, lumiere de jour"},
+{name:"Audrey Flack",cat:"photo",style:"photorealisme, couleurs saturees, detail photo"},
+{name:"Denis Peterson",cat:"photoportrait",style:"hyperrealisme, portrait, texture de peau, lumiere naturelle"},
+{name:"Alyssa Monks",cat:"photoportrait",style:"hyperrealisme, portrait dans l'eau, vapeur, peau mouillee"},
+{name:"Gottfried Helnwein",cat:"photoportrait",style:"hyperrealisme, portrait, contraste fort"},
+{name:"Omar Ortiz",cat:"photoportrait",style:"hyperrealisme, portrait, lumiere douce, peau detaillee"},
+{name:"Yigal Ozeri",cat:"photoportrait",style:"hyperrealisme, femme en exterieur, lumiere naturelle"},
+{name:"Pedro Campos",cat:"photo",style:"hyperrealisme, verre, reflets, rendu photo"},
+{name:"Ron Mueck",cat:"photo",style:"sculpture hyperrealiste, peau, proportions, rendu photo"},
+{name:"Kehinde Wiley",cat:"contemporary",style:"portrait majestueux sur fond floral ornemental, pose classique, couleurs vives"},
+{name:"Amy Sherald",cat:"contemporary",style:"portrait contemporain, fond plat colore, peau en gris, simplicite"},
+{name:"Jordan Casteel",cat:"contemporary",style:"portrait intime, lumiere chaude, couleurs riches, regard direct"},
+{name:"Elizabeth Peyton",cat:"contemporary",style:"portrait intime, couleurs douces, regard"},
+{name:"Jenny Saville",cat:"contemporary",style:"portrait charnel, gros plan, coups de pinceau epais, peau"},
+{name:"Mickalene Thomas",cat:"contemporary",style:"portrait, strass, motifs, couleurs pop, fond decoratif"},
+{name:"Barkley L. Hendricks",cat:"contemporary",style:"portrait, fond colore uni, pose fiere, mode"},
+{name:"Njideka Akunyili Crosby",cat:"contemporary",style:"portrait, collage photo, interieur domestique, motifs"},
+{name:"Marlene Dumas",cat:"contemporary",style:"portrait lave, aquarelle, emotion, fond clair"},
+{name:"Gerhard Richter",cat:"contemporary",style:"photo-peinture floue, realisme floute, gris / couleur"},
+{name:"Peter Doig",cat:"contemporary",style:"paysage onirique, couleurs, reflets, atmosphere"},
+{name:"Cecily Brown",cat:"contemporary",style:"peinture gestuelle, corps, couleurs, mouvement"},
+{name:"Luc Tuymans",cat:"contemporary",style:"peinture pale, flou, memoire, couleurs delavees"},
+{name:"Banksy",cat:"street",style:"street art au pochoir, noir et blanc, message, mur urbain"},
+{name:"JR",cat:"street",style:"portrait geant en noir et blanc colle sur mur, photo monumentale"},
+{name:"Shepard Fairey",cat:"street",style:"affiche serigraphiee, rouge / creme / bleu, contraste"},
+{name:"Vhils",cat:"street",style:"portrait grave dans le mur, beton, burin, contraste"},
+{name:"Eduardo Kobra",cat:"street",style:"mural colore, geometrie, arc-en-ciel, portrait vibrant"},
+{name:"Tristan Eaton",cat:"street",style:"mural pop, collage, couleurs vives, portrait"},
+{name:"Invader",cat:"street",style:"mosaique pixel art, street art, mur"},
+{name:"Os Gemeos",cat:"street",style:"street art, personnages jaunes, motifs, mural"},
+{name:"El Mac",cat:"street",style:"mural portrait realiste, lignes fines, couleurs"},
+{name:"Felipe Pantone",cat:"street",style:"geometrie, glitch, couleurs neon, mural"},
+{name:"MadC",cat:"street",style:"calligraphie abstraite coloree, mouvement, mural"},
+{name:"Okuda San Miguel",cat:"street",style:"sculpture / mural arc-en-ciel, geometrie, couleurs"},
+{name:"D*Face",cat:"street",style:"pop street, personnage, couleurs vives, humour"},
+{name:"Takashi Murakami",cat:"pop",style:"superflat, fleurs souriantes, couleurs bonbon, fond plat"},
+{name:"KAWS",cat:"pop",style:"personnage aux yeux en X, pop, couleurs vives"},
+{name:"Yayoi Kusama",cat:"pop",style:"pois, infini, miroirs, jaune / rouge, repetition"},
+{name:"Andy Warhol",cat:"pop",style:"serigraphie pop, repetition, couleurs contrastees, portrait pop"},
+{name:"David Hockney",cat:"pop",style:"couleurs vives, piscine, Californie, perspective joyeuse"},
+{name:"Keith Haring",cat:"pop",style:"figures dansantes, lignes noires epaisses, couleurs primaires"},
+{name:"Roy Lichtenstein",cat:"pop",style:"pop art, points Ben-Day, bulle BD, couleurs primaires"},
+{name:"Yoshitomo Nara",cat:"pop",style:"personnage enfantin, gros yeux, fond simple, pastel"},
+{name:"Mr Doodle",cat:"pop",style:"doodle noir sur blanc, gribouillis dense"},
+{name:"Ai Weiwei",cat:"contemporary",style:"installation conceptuelle, porcelaine, message"},
+{name:"Anish Kapoor",cat:"contemporary",style:"sculpture miroir, reflet, rouge / noir, monumental"},
+{name:"Olafur Eliasson",cat:"contemporary",style:"lumiere, miroir, installation, atmosphere"},
+{name:"Marina Abramovic",cat:"contemporary",style:"performance, corps, regard, minimal"},
+{name:"Cindy Sherman",cat:"photo",style:"portrait photographique mis en scene, identite, cinema"},
+{name:"Nan Goldin",cat:"photo",style:"photo intime, lumiere naturelle, vie reelle"},
+{name:"Annie Leibovitz",cat:"photo",style:"portrait photographique editorial, mise en scene, lumiere cinema"},
+{name:"Steve McCurry",cat:"photo",style:"portrait photographique, regard, couleurs riches, reportage"},
+{name:"Sebastiao Salgado",cat:"photo",style:"photo noir et blanc, humanite, contraste, reportage"},
+{name:"Swoon",cat:"street",style:"portrait decoupe papier colle, delicat, rue"}
+];
+function pickModernArtists(n,pool){
+  let list=MODERN_ARTISTS.filter(x=>pool==='all'||x.cat===pool||(pool==='photo'&&(x.cat==='photo'||x.cat==='photoportrait')));
+  if(!list.length) list=MODERN_ARTISTS;
+  const seen=new Set(); list=list.filter(x=>{if(seen.has(x.name))return false; seen.add(x.name); return true;});
+  list=[...list].sort(()=>Math.random()-0.5);
+  const out=[]; for(let i=0;i<n;i++){const a=list[i%list.length]; out.push({name:a.name,kind:'modern',style:a.style,cat:a.cat,variant:i>=list.length?Math.floor(i/list.length)+1:0});} return out;
+}
+
+// ===== NOUVEAU V3 : STYLES + GENRES + SELECTION MANUELLE =====
+const STYLES = [
+ {id:'cinema', label:'🎬 Cinéma', prompt:'Cinematic look: shot on 35mm / 85mm lens, shallow depth of field, film grain, dramatic lighting, movie still, anamorphic, color grading like a feature film.'},
+ {id:'graffiti', label:'🎨 Graffiti', prompt:'Graffiti / street mural style: spray paint, bold outlines, drips, layered tags, vibrant colors on a concrete wall, urban texture.'},
+ {id:'bd', label:'💬 Bande Dessinée', prompt:'Bande dessinee / comic book style: clear line (ligne claire), ink outlines, halftone dots, speech-bubble-ready framing, flat colors with strong blacks, European comics.'},
+ {id:'cartoon', label:'🤪 Cartoon', prompt:'Cartoon style: exaggerated proportions, big expressive eyes, bold outlines, saturated colors, playful, animated series look. WARNING: if Keep Face is ON, keep face geometry realistic, cartoon applies only to background and grading.'},
+ {id:'anime', label:'🇯🇵 Anime / Manga', prompt:'Anime / manga style: clean cel shading, large detailed eyes, dynamic hair, Japanese animation look.'},
+ {id:'noir', label:'🖤 Noir & Blanc', prompt:'Black and white photography: high contrast, deep blacks, film grain, timeless.'},
+ {id:'vintage', label:'📻 Vintage / Rétro', prompt:'Vintage look: 70s / 80s film photo, faded colors, grain, retro wardrobe and set, nostalgic.'},
+ {id:'neon', label:'🌃 Néon / Cyberpunk', prompt:'Neon / cyberpunk: night city, neon signs pink/cyan, wet street reflections, futuristic mood.'},
+ {id:'aquarelle', label:'🎨 Aquarelle', prompt:'Watercolor: soft washes, paper texture, bleeding colors, artistic.'},
+ {id:'hyperreal', label:'📸 Hyperréaliste', prompt:'Hyperrealistic photograph: ultra detailed skin, pores, natural light, 85mm lens, indistinguishable from a real photo.'},
+ {id:'pop', label:'💥 Pop Art', prompt:'Pop art: bold flat colors, Ben-Day dots, high contrast, Warhol / Lichtenstein energy.'},
+ {id:'polaroid', label:'📷 Polaroid', prompt:'Polaroid photo: instant film, soft flash, white border feel, nostalgic snapshot.'},
+];
+const GENRES = [
+ {id:'horreur', label:'👻 Horreur', prompt:'Genre HORROR: dark atmosphere, fog, shadows, tense, unsettling, cold colors, fear, suspense. Keep the person recognisable, no gore on the face, no deformation.'},
+ {id:'policier', label:'🕵️ Policier / Thriller', prompt:'Genre POLICIER / THRILLER: detective mood, rain, night city, trench coat, neon, mystery, cinematic tension, film noir lighting.'},
+ {id:'action', label:'💥 Action', prompt:'Genre ACTION: dynamic pose, movement, explosion / chase energy in background, dramatic light, blockbuster movie still.'},
+ {id:'fantaisie', label:'🧚 Fantaisie / Fantasy', prompt:'Genre FANTASY: magical world, enchanted forest / castle / dragons in background, mystical light, epic, costumes, wonder.'},
+ {id:'superheros', label:'🦸 Super-Héros', prompt:'Genre SUPER-HEROS: heroic pose, cape / costume, dramatic sky, city in background, epic lighting, comic-book heroic framing. Keep the real face of the person.'},
+ {id:'scifi', label:'🚀 Science-Fiction', prompt:'Genre SCI-FI: futuristic city / spaceship, holograms, high-tech, cinematic sci-fi lighting.'},
+ {id:'western', label:'🤠 Western', prompt:'Genre WESTERN: desert, cowboy hat, dusty town, golden hour, western movie.'},
+ {id:'romance', label:'❤️ Romance', prompt:'Genre ROMANCE: warm soft light, golden hour, intimate, Paris / cafe / sunset, tender mood.'},
+ {id:'comedie', label:'😂 Comédie', prompt:'Genre COMEDY: funny, playful, bright colors, light-hearted, sitcom energy.'},
+ {id:'drame', label:'🎭 Drame', prompt:'Genre DRAMA: emotional, intimate, soft natural light, melancholic, deep storytelling.'},
+ {id:'historique', label:'🏛️ Historique', prompt:'Genre HISTORICAL: period costume, historical set, museum / palace, period-accurate atmosphere.'},
+ {id:'musical', label:'🎤 Musical / Pop Star', prompt:'Genre MUSICAL / POP STAR: stage, concert lights, microphone, crowd bokeh, star performance.'},
+];
+let SEL_STYLES=new Set(), SEL_GENRES=new Set(), SEL_ARTISTS=new Set();
+function renderChips(){
+  $('styleChips').innerHTML=STYLES.map(s=>`<span class="chip style ${SEL_STYLES.has(s.id)?'on':''}" data-style="${s.id}">${s.label}</span>`).join('');
+  $('genreChips').innerHTML=GENRES.map(g=>`<span class="chip genre ${SEL_GENRES.has(g.id)?'on':''}" data-genre="${g.id}">${g.label}</span>`).join('');
+  document.querySelectorAll('[data-style]').forEach(el=>el.onclick=()=>{ SEL_STYLES.has(el.dataset.style)?SEL_STYLES.delete(el.dataset.style):SEL_STYLES.add(el.dataset.style); renderChips(); });
+  document.querySelectorAll('[data-genre]').forEach(el=>el.onclick=()=>{ SEL_GENRES.has(el.dataset.genre)?SEL_GENRES.delete(el.dataset.genre):SEL_GENRES.add(el.dataset.genre); renderChips(); });
+}
+function renderArtistList(){
+  const q=($('artistSearch')?.value||'').toLowerCase();
+  const pool=$('pool')?.value||'all';
+  let list=MODERN_ARTISTS.filter((x,i,arr)=>arr.findIndex(y=>y.name===x.name)===i);
+  if(pool!=='all') list=list.filter(x=>x.cat===pool||(pool==='photo'&&(x.cat==='photo'||x.cat==='photoportrait')));
+  if(q) list=list.filter(x=>x.name.toLowerCase().includes(q)||(x.style||'').toLowerCase().includes(q));
+  $('artistList').innerHTML=list.map(a=>`<label class="artist-item"><input type="checkbox" data-artist="${a.name.replace(/"/g,'')}" ${SEL_ARTISTS.has(a.name)?'checked':''}><b>${a.name}</b><span class="cat">${a.cat}</span><span class="st">${(a.style||'').slice(0,80)}</span></label>`).join('')||'<div class="sub p-2">Aucun artiste — change de vivier ou efface la recherche.</div>';
+  document.querySelectorAll('[data-artist]').forEach(cb=>cb.onchange=()=>{ cb.checked?SEL_ARTISTS.add(cb.dataset.artist):SEL_ARTISTS.delete(cb.dataset.artist); updateSelCount(); });
+  updateSelCount();
+}
+function updateSelCount(){ const n=SEL_ARTISTS.size; $('selCount').textContent=n?`${n} artiste(s) sélectionné(s) — ce sont EUX qui seront utilisés`:`0 artiste sélectionné → tirage auto`; }
+function getStyleGenreBlock(){
+  const s=STYLES.filter(x=>SEL_STYLES.has(x.id)).map(x=>x.prompt).join('\n');
+  const g=GENRES.filter(x=>SEL_GENRES.has(x.id)).map(x=>x.prompt).join('\n');
+  let out='';
+  if(s) out+=`\n\nCHOSEN STYLE(S) - APPLY THESE ON TOP OF THE ARTIST STYLE (style affects lighting, background, grading, mood - NEVER the face geometry if Keep Face is ON):\n${s}`;
+  if(g) out+=`\n\nCHOSEN GENRE(S) - THE SCENE MUST BELONG TO THIS GENRE:\n${g}\nThe person stays the SAME PERSON, just placed in this genre universe (costume, set, lighting, atmosphere). Do NOT turn the person into a different character.`;
+  return out;
+}
+function getManualArtists(n){
+  if(!SEL_ARTISTS.size) return null;
+  const byName=new Map(); MODERN_ARTISTS.forEach(a=>{if(!byName.has(a.name)) byName.set(a.name,a)});
+  const arr=[...SEL_ARTISTS].map(name=>byName.get(name)).filter(Boolean);
+  const out=[]; for(let i=0;i<n;i++){ const a=arr[i%arr.length]; out.push({name:a.name,kind:'modern',style:a.style,cat:a.cat,variant:i>=arr.length?Math.floor(i/arr.length)+1:0}); }
+  return out;
+}
+
+const db=new Dexie('artstudio');
+db.version(1).stores({keys:'++id,&key',batches:'++id',artists:'++id,batch_id,&[batch_id+name]',images:'++id,batch_id,artist_id,parent_id,[batch_id+status]',blobs:'id'});
+let KEYS=[],CUR=0,IMGF=null,SETUP=false,KI=0,URLS=[],POLL=null;
+const RUN={on:false,paused:false,stop:false,active:0,t0:0,d0:0,bid:0,b:null},VIEW={page:1,per:12,filter:'all',c:null};
+function toast(m,t=''){const e=$('toast');e.textContent=m;e.className='on '+t;clearTimeout(e._t);e._t=setTimeout(()=>e.className=t,3200)}
+function setStatus(m,c='',sp){const e=$('status');e.className='status '+c;e.innerHTML=(sp?'<span class="spin"></span> ':'')+esc(m)}
+async function usage(){try{const e=await navigator.storage.estimate();$('usage').textContent=(e.usage/1048576).toFixed(1)+' Mo'}catch(e){}}
+async function agnes(path,payload,key,timeout){
+  const c=new AbortController(),t=setTimeout(()=>c.abort(),timeout);
+  try{const r=await fetch(BASE+path,{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+key},body:JSON.stringify(payload),signal:c.signal});
+  const txt=await r.text();let d={};try{d=JSON.parse(txt)}catch(e){} if(!r.ok){const e=new Error('HTTP '+r.status+' : '+(d.error?.message||txt.slice(0,200)));e.code=r.status;throw e} return d;
+  }catch(e){if(e.name==='AbortError')throw new Error('Timeout ('+Math.round(timeout/1000)+'s)');throw e} finally{clearTimeout(t)}
+}
+const nextKey=()=>KEYS[KI++%KEYS.length].key;
+async function chat(p,timeout){ if(!KEYS.length)throw new Error('Aucune clé'); const key=nextKey(); p={...p,reasoning_effort:'none',chat_template_kwargs:{enable_thinking:false}};
+  try{return await agnes('/chat/completions',{...p,model:TXT},key,timeout)}catch(e){if(e.code===400||e.code===404)return agnes('/chat/completions',{...p,model:TXT2},key,timeout);throw e}
+}
+function parseEssence(d){ const o={theme:'',composition:'',characters:'',style:'',text:''},S=['THEME','COMPOSITION','CHARACTERS','STYLE','TEXT']; if(d)S.forEach((s,i)=>{const n=S[i+1],m=d.match(new RegExp(s+'\\s*:\\s*([\\s\\S]*?)(?='+(n?'\\n'+n+'\\s*:':'$')+')','i'));if(m)o[s.toLowerCase()]=m[1].replace(/\s+/g,' ').trim()}); return o; }
+function styleBlock(a){
+  const keep=$('keepFace')?.checked;
+  const face=keep?`PRESERVE IDENTITY - Keep the exact same person from the reference photo: same face, same age, same hairstyle, same eyes, same expression, same pose. Do NOT beautify, age, swap or cartoonify the person. The result must still be recognisable as the same person in a real photo.`:'';
+  const fid=+$('fidelity')?.value||100;
+  const strict=$('photoStrict')?.checked;
+  const identity=`IDENTITY LOCK - NON-NEGOTIABLE, PRIORITY #1 OVER STYLE:
+- This is the SAME PERSON as the reference photo. Do NOT change identity.
+- Same face shape, same eyes (shape, colour, distance), same nose, same lips, same jawline, same ears, same forehead, same cheekbones.
+- Same age, same gender presentation, same skin tone, same moles / freckles / scars if visible.
+- Same hairstyle, same hair colour, same hairline. Same eyebrows.
+- Same expression, same head tilt, same pose, same framing.
+- FORBIDDEN: beautify, slim the face, enlarge eyes, whiten teeth, smooth skin into plastic, age up/down, swap face, make a generic beautiful person, cartoon, anime, 3D, doll, painting face.
+- If style and identity conflict, IDENTITY WINS. Reduce style to keep the face.
+- Skin must keep REAL texture: pores, fine lines, natural imperfections. No plastic / airbrushed skin.
+- Fidelity target: ${fid}% identical to reference face. ${fid>=90?'Almost a retouched copy of the same photo, only lighting/background/style changes slightly.':fid>=70?'Clearly recognisable as the same person, style visible but face intact.':'Style strong but person still recognisable.'}`;
+  const photoRule=strict?`PHOTO STRICT MODE: Output must be indistinguishable from a real photograph taken with a 85mm lens, f/2.0, natural light. NO painting, NO illustration, NO cartoon, NO 3D render, NO watercolor, NO oil paint texture on the face. The face is PHOTOGRAPHIC, not painted.`:`REAL PHOTO ANCHOR - Must look like a real photograph / real artwork photographed in real light. Natural skin texture, real shadows, real depth of field.`;
+  if(a.kind==='modern') return `STRICT STYLE - A FINISHED ORIGINAL ARTWORK in the style of ${a.name}, as if ${a.name} personally created this exact subject.\nStyle reference: ${a.style||''}.\n${identity}\n${photoRule}\nStyle applies to LIGHTING, BACKGROUND, COLOUR GRADING, WARDROBE and MOOD - NOT to the face geometry. Never redraw the face to fit the style.`;
+  const m=a.mix_of||[];
+  if(m.length>=3) return `STRICT STYLE - A FINISHED ORIGINAL ARTWORK merging the three distinct visual signatures of ${m[0]}, ${m[1]} and ${m[2]}.\nInterweave their authentic media, palettes, mark-making, lighting and composition into ONE unified hybrid style. Each artist must be visibly present.\n${face}\nResult: looks like a REAL PHOTOGRAPH / REAL MURAL PHOTOGRAPHED, not a cartoon.`;
+  return 'STRICT STYLE - A FINISHED ORIGINAL ARTWORK, highly stylized illustration with strong visual identity, authentic medium, cinematic lighting, distinctive palette, well-composed like a genuine gallery piece. '+face;
+}
+function buildPrompt(a,user,desc){
+  const e=parseEssence(desc);let b=''; if(user)b+='BRIEF: '+user+'\n'; if(e.theme)b+='THEME: '+e.theme+'\n'; if(e.composition)b+='COMPOSITION: '+e.composition+'\n'; if(e.characters&&e.characters.toLowerCase()!=='none')b+='CHARACTERS: '+e.characters+'\n';
+  const t=e.text.trim(),has=t&&!['none','aucun'].includes(t.toLowerCase())&&t.length<=30;
+  b=b.trim()||'Reinterpret the essence of the reference freely.';
+  const ts=has?`\n\nOPTIONAL MINOR TEXT - rendered SMALL, discreet, integrated into the composition as a SECONDARY element only. Never a focal point. Max ~5% of the canvas area: "${t}"`:'';
+  const tt=has?'Any text is small and integrated as a minor element - no banners, no overlays, no giant lettering.':'No text, no lettering, no typography.';
+  return styleBlock(a)+getStyleGenreBlock()+`\n\nREFERENCE ESSENCE - REINTERPRET FREELY through the artist's own vision. Do NOT copy the reference literally. Capture its essence and translate it entirely into the artist's visual language:\n`+b+ts+`\n\nTECHNICAL: full composition, well-balanced, museum-quality presentation. ${tt} No watermark, no signature, no frame, no border, no UI, no caption.`;
+}
+async function materialize(bid){
+  const b=await db.batches.get(bid);if(!b)return 0; const u=(b.input_text||'').trim(),d=(b.image_desc||'').trim();if(!u&&!d)return 0;
+  const [as,ims]=await Promise.all([db.artists.where('batch_id').equals(bid).toArray(),db.images.where('batch_id').equals(bid).toArray()]);
+  const have=new Set(ims.filter(i=>!i.parent_id).map(i=>i.artist_id));
+  const rows=as.filter(a=>!have.has(a.id)).map(a=>({batch_id:bid,artist_id:a.id,prompt:buildPrompt(a,u,d),parent_id:0,status:'pending',error:null,attempts:0,remote:null,updated_at:Date.now()}));
+  if(rows.length)await db.images.bulkAdd(rows); return rows.length;
+}
+async function analyze(bid,image){
+  const sys=`You extract the CREATIVE ESSENCE of a reference image as a COMPACT brief for artistic reinterpretation.\n\nOutput EXACTLY these 5 sections, plain text, no markdown, no JSON, no preamble:\n\nTHEME: <1 short sentence>\nCOMPOSITION: <1 short sentence>\nCHARACTERS: <compact list or "none">\nSTYLE: <1 short sentence - mood only>\nTEXT: <ONLY if text is THEMATICALLY ESSENTIAL, max 15 chars, else "none">\n\nRULES: TOTAL under 100 words. Do NOT describe clothing items, exact colors, textures. NEVER transcribe banners, watermarks, brand names, UI, captions, logos. When in doubt about TEXT, output "none".`;
+  const v=await chat({messages:[{role:'system',content:sys},{role:'user',content:[{type:'text',text:'Extract the creative essence.'},{type:'image_url',image_url:{url:image}}]}],temperature:.2,max_tokens:500},130000);
+  const d=(v.choices?.[0]?.message?.content||'').trim();if(!d)throw new Error('Réponse vide'); await db.batches.update(bid,{image_desc:d});await materialize(bid);return d;
+}
+async function expand(bid,want,target){
+  const pool=$('pool')?.value||'all';
+  const existing=await db.artists.where('batch_id').equals(bid).toArray();
+  const cur=existing.filter(a=>a.kind==='modern').length;
+  if(cur>=target){await materialize(bid);return{total:cur,added:0,done:true}}
+  const need=Math.min(want,target-cur+10);
+  const have=new Set(existing.filter(a=>a.kind==='modern').map(a=>a.name.toLowerCase()));
+  const manual=getManualArtists(need+20);
+  const picks=(manual||pickModernArtists(need+20,pool)).filter(p=>!have.has(p.name.toLowerCase()));
+  // Si sélection manuelle, on autorise les variantes (même artiste plusieurs fois avec styles/genres différents)
+  if(manual){ let add2=0; for(const p of manual){ if(add2>=need)break; try{await db.artists.add({batch_id:bid,name:p.variant?p.name+' (variante '+p.variant+')':p.name,kind:'modern',mix_of:null,style:p.style,cat:p.cat});add2++;}catch(e){} } await materialize(bid); return{total:cur+add2,added:add2,done:cur+add2>=target}; }
+  let add=0; for(const p of picks){ if(add>=need)break; try{await db.artists.add({batch_id:bid,name:p.variant?p.name+' (variante '+p.variant+')':p.name,kind:'modern',mix_of:null,style:p.style,cat:p.cat});add++;}catch(e){} }
+  await materialize(bid); return{total:cur+add,added:add,done:cur+add>=target};
+}
+async function mixes(bid,count){
+  const all=await db.artists.where('batch_id').equals(bid).toArray(),f=all.filter(a=>a.kind==='modern').map(a=>a.name);
+  if(f.length<3)throw new Error('Pas assez d’artistes (min 3)');
+  const need=count-(all.length-f.length);let add=0,tries=0;
+  while(add<need&&tries++<need*30+500){ const s=new Set();while(s.size<3)s.add(Math.floor(Math.random()*f.length)); const p=[...s].map(i=>f[i]).sort(); try{await db.artists.add({batch_id:bid,name:'Mix: '+p.join(' × '),kind:'mix',mix_of:p});add++}catch(e){} }
+  await materialize(bid);return add;
+}
+
+async function thumb(blob){ const bm=await createImageBitmap(blob),w=Math.min(THUMB,bm.width),h=Math.round(bm.height*w/bm.width),c=document.createElement('canvas'); c.width=w;c.height=h;c.getContext('2d').drawImage(bm,0,0,w,h); return new Promise(r=>c.toBlob(r,'image/jpeg',.78)); }
+async function processImg(im){
+  refreshCell(im.id);
+  try{
+    const b=RUN.b;
+    // Envoi de la photo d'origine comme référence image-to-image si le modèle la supporte.
+    // Si l'API l'ignore, le prompt IDENTITY LOCK prend le relais. On ne casse rien si elle est rejetée.
+    const payload={model:IMG,prompt:im.prompt.slice(0,5000),size:b.size,ratio:b.ratio,extra_body:{response_format:'url'}};
+    if(IMGF){ payload.image=IMGF; payload.extra_body.image=IMGF; payload.extra_body.reference_image=IMGF; }
+    let d=null,lastErr=null;
+    for(let attempt=0;attempt<3;attempt++){ try{ d=await agnes('/images/generations',payload,nextKey(),240000); break; }catch(e){ lastErr=e; if(e.code===429||String(e.message).includes('Timeout')) await sleep(4000*(attempt+1)); else if(attempt<2) await sleep(1500); else throw e; } }
+    if(!d) throw lastErr||new Error('Echec generation');
+    let u=d.data?.[0]?.url;if(!u&&d.data?.[0]?.b64_json)u='data:image/png;base64,'+d.data[0].b64_json; if(!u)throw new Error('Pas d’URL');
+    let full=null,remote=null;
+    try{full=await (await fetch(u)).blob();if(full.size<100)throw new Error('image vide')}catch(e){if(u.startsWith('data:'))throw new Error('Image invalide');full=null;remote=u}
+    if(full){const th=await thumb(full).catch(()=>full);await db.blobs.put({id:im.id,full,thumb:th||full})}
+    await db.images.update(im.id,{status:'done',remote,error:null,updated_at:Date.now()});
+  }catch(e){ const at=(im.attempts||0)+1; await db.images.update(im.id,{error:String(e.message).slice(0,300),status:at<3?'pending':'error',attempts:at,updated_at:Date.now()}); if(e.code===429)await sleep(3000); }
+  refreshCell(im.id);
+}
+async function worker(){
+  while(RUN.on&&!RUN.stop){
+    if(RUN.paused||!KEYS.length){await sleep(500);continue}
+    const im=await db.transaction('rw',db.images,async()=>{ const r=await db.images.where('[batch_id+status]').equals([RUN.bid,'pending']).first(); if(r)await db.images.update(r.id,{status:'running',updated_at:Date.now()});return r});
+    if(!im){ const n=await db.images.where('[batch_id+status]').anyOf([[RUN.bid,'pending'],[RUN.bid,'running']]).count(); if(!n&&!SETUP)return;await sleep(1200);continue; }
+    RUN.active++;try{await processImg(im)}finally{RUN.active--}
+  }
+}
+async function startWorkers(){
+  if(RUN.on)return; RUN.b=await db.batches.get(CUR);if(!RUN.b)return;
+  Object.assign(RUN,{on:true,paused:false,stop:false,active:0,t0:Date.now(),d0:VIEW.c?.done||0,bid:CUR});
+  setUi();clearInterval(POLL);POLL=setInterval(refreshCounts,1500);
+  const n=+$('workers').value||8; await Promise.all(Array.from({length:n},worker));
+  RUN.on=false;clearInterval(POLL);await loadGallery();setUi();usage();
+}
+function setUi(){ $('go').disabled=RUN.on;$('go').textContent=RUN.on?'GÉNÉRATION EN COURS…':'LANCER LA GÉNÉRATION'; $('pause').classList.toggle('d-none',!RUN.on||RUN.paused);$('resume').classList.toggle('d-none',!RUN.on||!RUN.paused);$('stop').classList.toggle('d-none',!RUN.on); }
+async function counts(){ const c={pending:0,running:0,done:0,error:0,total:0};if(!CUR)return c; const s=['pending','running','done','error'],r=await Promise.all(s.map(x=>db.images.where('[batch_id+status]').equals([CUR,x]).count())); s.forEach((x,i)=>{c[x]=r[i];c.total+=r[i]});return c; }
+async function refreshCounts(){VIEW.c=await counts();progress(VIEW.c)}
+function progress(c){ const t=c.total||1; $('barD').style.width=c.done/t*100+'%';$('barR').style.width=c.running/t*100+'%';$('barE').style.width=c.error/t*100+'%'; $('stD').textContent=c.done+' / '+c.total;$('stR').textContent=c.running;$('stE').textContent=c.error+(c.pending?' · '+c.pending+' en attente':''); let l=''; if(RUN.on){ l=RUN.active+' workers actifs';const el=(Date.now()-RUN.t0)/60000,pr=c.done-RUN.d0; if(pr>=3&&el>.1){const rate=pr/el,rem=c.total-c.done-c.error;l+=' · '+rate.toFixed(1)+' img/min';if(rem>0)l+=' · ≈ '+Math.max(1,Math.ceil(rem/rate))+' min'} } if(c.error)l+=(l?' · ':'')+'⚠ '+c.error+' erreur(s)'; $('eta').textContent=l; }
+async function blobMap(ids){ const m=new Map(),rs=await db.blobs.bulkGet(ids); rs.forEach(r=>{if(r){const u=URL.createObjectURL(r.thumb);URLS.push(u);m.set(r.id,u)}});return m; }
+const imgHtml=(i,bl)=>{ if(i.status==='done'){const u=bl.get(i.id)||i.remote;return u?`<img loading="lazy" data-id="${i.id}" data-r="${esc(i.remote||'')}" src="${esc(u)}" alt="">`:'<div class="ph err">image absente</div>'} if(i.status==='error')return `<div class="ph err">✕ ${esc(i.error||'erreur')}</div>`; if(i.status==='running')return '<div class="ph shim"><span class="spin"></span> Génération…</div>'; return '<div class="ph">⏳ En attente</div>'; };
+const prBlock=i=>`<details><summary>📝 Prompt</summary><textarea class="ic-p form-control" data-pid="${i.id}">${esc(i.prompt)}</textarea><div class="act"><button class="mini" data-act="copy" data-id="${i.id}">📋 Copier</button><button class="mini" data-act="${['pending','error'].includes(i.status)?'save':'regen'}" data-id="${i.id}">${['pending','error'].includes(i.status)?'💾 Enregistrer':'🔄 Regénérer'}</button></div></details>`;
+function cellHtml(it,a,vs,bl){ const k=a?.kind==='mix'?'mix':'modern'; return `<div class="img-cell" data-id="${it.id}"><div class="ic-h"><span class="ic-n" title="${esc(a?.name)}">${esc(a?.name)}</span><span class="ic-c ${k}">${k}</span></div><div class="ic-img">${imgHtml(it,bl)}</div>${prBlock(it)}${vs.map(v=>`<div class="version"><div class="vh">#${v.id} · ${v.status}</div><div class="v-img">${imgHtml(v,bl)}</div>${prBlock(v)}</div>`).join('')}</div>`; }
+async function loadGallery(){
+  URLS.forEach(u=>URL.revokeObjectURL(u));URLS=[]; const g=$('grid');
+  if(!CUR){g.innerHTML='';$('empty').classList.remove('d-none');$('pager').innerHTML='';return}
+  const [bt,as,ims]=await Promise.all([db.batches.get(CUR),db.artists.where('batch_id').equals(CUR).toArray(),db.images.where('batch_id').equals(CUR).toArray()]);
+  if(bt)g.style.setProperty('--ar',bt.ratio.replace(':','/'));
+  const AM=new Map(as.map(a=>[a.id,a])),f=VIEW.filter;
+  const roots=ims.filter(i=>!i.parent_id&&(f==='all'||(f==='modern'||f==='mix'?AM.get(i.artist_id)?.kind===f:i.status===f))).sort((a,b)=>a.id-b.id);
+  const pages=Math.max(1,Math.ceil(roots.length/VIEW.per));VIEW.page=Math.min(VIEW.page,pages);
+  const sl=roots.slice((VIEW.page-1)*VIEW.per,VIEW.page*VIEW.per),ids=new Set(sl.map(s=>s.id)),vers=ims.filter(i=>ids.has(i.parent_id));
+  const bl=await blobMap([...sl,...vers].filter(i=>i.status==='done').map(i=>i.id));
+  g.innerHTML=sl.map(it=>cellHtml(it,AM.get(it.artist_id),vers.filter(v=>v.parent_id===it.id),bl)).join('');
+  $('empty').classList.toggle('d-none',sl.length>0);renderPager(roots.length,pages); VIEW.c=await counts();progress(VIEW.c);
+}
+async function refreshCell(id){
+  try{ const im=await db.images.get(id);if(!im)return; const rid=im.parent_id||im.id,cell=document.querySelector(`.img-cell[data-id="${rid}"]`); if(!cell||(cell.contains(document.activeElement)&&document.activeElement.tagName==='TEXTAREA')){refreshCounts();return} const root=await db.images.get(rid),a=await db.artists.get(root.artist_id),vs=await db.images.where('parent_id').equals(rid).toArray(); const bl=await blobMap([root,...vs].filter(i=>i.status==='done').map(i=>i.id)); cell.outerHTML=cellHtml(root,a,vs,bl);refreshCounts(); }catch(e){}
+}
+function renderPager(total,pages){ const p=VIEW.page;if(pages<=1){$('pager').innerHTML=`<span class="inf">${total} artiste(s)</span>`;return} const r=new Set([1,pages]);for(let i=Math.max(1,p-2);i<=Math.min(pages,p+2);i++)r.add(i); const b=(n,l,d,on)=>`<button class="pg${on?' on':''}" data-pg="${n}"${d?' disabled':''}>${l}</button>`; let h=b(1,'«',p<=1)+b(p-1,'‹',p<=1),prev=0; [...r].sort((x,y)=>x-y).forEach(n=>{if(prev&&n-prev>1)h+='<span class="inf">…</span>';h+=b(n,n,0,n===p);prev=n}); $('pager').innerHTML=h+b(p+1,'›',p>=pages)+b(pages,'»',p>=pages)+`<span class="inf">${total} · ${p}/${pages}</span>`; }
+async function openLb(id,remote){ let u=remote;const b=await db.blobs.get(id);if(b){u=URL.createObjectURL(b.full);URLS.push(u)} $('lbi').src=u;$('lbDl').href=u;$('lb').classList.add('on'); }
+async function regen(id,prompt){ const im=await db.images.get(id);if(!im)return; const nid=await db.images.add({batch_id:im.batch_id,artist_id:im.artist_id,prompt,parent_id:im.parent_id||im.id,status:'pending',error:null,attempts:0,remote:null,updated_at:Date.now()}); toast('Nouvelle version en cours…','ok');await refreshCell(nid); if(!RUN.on){CUR=im.batch_id;startWorkers()} }
+function step(n,s,x){ const e=$('s-'+n),t=e.querySelector('.time');clearInterval(e._t); e.className='step '+({run:'active',ok:'done',err:'error',skip:'skip'}[s]||''); e.querySelector('.dot').textContent={ok:'✓',err:'✕',skip:'—'}[s]||(ST.indexOf(n)+1); if(s==='idle'){e._0=0;t.textContent=''} else if(s==='run'){e._0=Date.now();e._t=setInterval(()=>t.textContent=((Date.now()-e._0)/1000).toFixed(1)+'s',200)} else t.textContent=(e._0&&s!=='skip'?((Date.now()-e._0)/1000).toFixed(1)+'s':'')+(x?(e._0&&s!=='skip'?' · ':'')+x:''); }
+async function run(){
+  if(RUN.on)return;
+  const prompt=$('prompt').value.trim(),F=Math.max(1,+$('nF').value||60);let M=Math.max(0,+$('nM').value||0),has=!!IMGF,skip=$('skip').checked;
+  if(!prompt&&!has)return toast('Prompt ou image requis','err');
+  if(!KEYS.length){toast('Ajoutez vos clés API (🔑)','err');$('drawer').classList.add('on');return}
+  ST.forEach(n=>step(n,'idle'));$('ana').classList.add('d-none');$('go').disabled=true;RUN.stop=false; let wp=null;
+  try{
+    step('create','run');setStatus('Création du batch…','',1);
+    CUR=await db.batches.add({input_text:prompt,image_desc:'',target_modern:F,target_mix:M,ratio:$('ratio').value,size:$('size').value,created_at:Date.now()});
+    VIEW.page=1;step('create','ok');await loadGallery();
+    if(has&&(!prompt||!skip)){
+      step('analyze','run');setStatus('Extraction de l’essence de l’image…','',1); let ok=0,le='';
+      for(let a=0;a<3&&!ok&&!RUN.stop;a++){if(a)await sleep(2000);try{const d=await analyze(CUR,IMGF);$('ana').textContent='🔍 '+d;$('ana').classList.remove('d-none');ok=1}catch(e){le=e.message}}
+      if(ok)step('analyze','ok');else if(prompt)step('analyze','ok','échec · prompt seul');else{step('analyze','err',le);throw new Error('Analyse échouée : '+le)}
+    }else step('analyze','skip',has?'ignorée':'pas d’image');
+    SETUP=true;wp=startWorkers();
+    step('artists','run');let cur=0,r=0,fails=0;
+    while(cur<F&&r<10&&!RUN.stop){ setStatus(`Artistes modernes : ${cur}/${F} · générations en cours : ${VIEW.c?.running||0}`,'',1); try{const e=await expand(CUR,r?Math.min(80,F-cur+20):80,F);cur=e.total;r++;fails=0;if(e.done)break;if(!e.added)fails++;if(fails>=2)break} catch(e){fails++;r++;if(fails>=3)break;await sleep(1500)} }
+    step('artists','ok',cur+' artistes');
+    if($('noMixFace')?.checked && $('keepFace')?.checked){ M=0; step('mixes','skip','désactivé pour protéger le visage'); } else if(M>0&&!RUN.stop){step('mixes','run');setStatus('Génération des mixes…','',1);await mixes(CUR,M);step('mixes','ok')}else step('mixes','skip');
+    step('prompt','run');await materialize(CUR);const tot=(await counts()).total;step('prompt','ok',tot+' prompts'); $('binfo').textContent=`Batch #${CUR} · ${tot} images au total`;SETUP=false;await loadGallery();
+  }catch(e){SETUP=false;RUN.stop=true;setStatus('✕ '+e.message,'err');toast(e.message,'err')}
+  SETUP=false;if(wp)await wp.catch(()=>{}); setUi();const c=VIEW.c||{}; if(!$('status').classList.contains('err'))setStatus(RUN.stop?'⏹ Arrêté':`✓ Terminé — ${c.done||0} images`+(c.error?` · ${c.error} erreurs`:''),RUN.stop?'warn':'ok'); loadBatches();
+}
+async function loadBatches(){
+  const bs=await db.batches.orderBy('id').reverse().limit(20).toArray();
+  $('hist').innerHTML=(await Promise.all(bs.map(async b=>{ const [t,d]=await Promise.all([db.images.where('batch_id').equals(b.id).filter(i=>!i.parent_id).count(),db.images.where('[batch_id+status]').equals([b.id,'done']).count()]); return `<div class="brow${b.id===CUR?' on':''}" data-b="${b.id}"><span class="bt">#${b.id} · ${esc((b.input_text||b.image_desc||'(image)').slice(0,80))}</span><span>${d}/${t}</span><button class="mini" data-del="${b.id}">✕</button></div>`; }))).join('')||'<div class="sub">Aucun batch.</div>';
+}
+async function delBatch(id){ if(RUN.on&&RUN.bid===id)RUN.stop=true; const ids=await db.images.where('batch_id').equals(id).primaryKeys(); await db.transaction('rw',db.batches,db.artists,db.images,db.blobs,async()=>{ await db.blobs.bulkDelete(ids);await db.images.where('batch_id').equals(id).delete();await db.artists.where('batch_id').equals(id).delete();await db.batches.delete(id)}); }
+function parseKeys(t){ const m=new Map(); for(const l of t.split('\n')){const p=l.trim().split(/\s+/);if(p[0]&&p[0].startsWith('sk-')&&p[0].length>=20)m.set(p[0],{key:p[0],rpm:Math.max(1,parseInt(p[1],10)||10)})} return [...m.values()]; }
+function tag(){ const n=KEYS.length,rpm=KEYS.reduce((s,k)=>s+k.rpm,0); $('mode').textContent=n?'LIVE · '+n:'NON CONFIGURÉ';$('mode').className=n?'live':''; $('gstat').textContent=n?`${n} clé(s) · ${rpm} RPM cumulés`:'Cliquez sur 🔑 pour ajouter vos clés';$('ksum').textContent=n?`${n} clé(s) · ${rpm} RPM`:'0 clé'; }
+async function saveKeys(){ const e=parseKeys($('keys').value); await db.transaction('rw',db.keys,async()=>{await db.keys.clear();await db.keys.bulkAdd(e)}); KEYS=await db.keys.toArray();tag();$('kStat').className='status ok';$('kStat').textContent='✓ '+e.length+' clé(s) enregistrée(s)'; toast('Clés enregistrées','ok'); }
+async function testKeys(){ const e=parseKeys($('keys').value);if(!e.length)return toast('Aucune clé','err'); $('kStat').className='status';$('kStat').innerHTML='<span class="spin"></span> Test…'; const r=await Promise.all(e.slice(0,10).map(k=>agnes('/chat/completions',{model:TXT,messages:[{role:'user',content:'ok'}],max_tokens:1},k.key,15000).then(()=>1,()=>0))); const ok=r.filter(Boolean).length;$('kStat').className='status '+(ok===r.length?'ok':ok?'warn':'err');$('kStat').textContent=`${ok}/${r.length} valides`; }
+function compress(u,max=800){ return new Promise(res=>{const i=new Image();i.onload=()=>{const s=Math.min(1,max/Math.max(i.width,i.height)),c=document.createElement('canvas');c.width=Math.round(i.width*s);c.height=Math.round(i.height*s);c.getContext('2d').drawImage(i,0,0,c.width,c.height);res(c.toDataURL('image/jpeg',.75))};i.onerror=()=>res(u);i.src=u}); }
+async function handleImg(f){ if(!f||!f.type.startsWith('image/'))return; const u=await new Promise((res,rej)=>{const r=new FileReader();r.onload=e=>res(e.target.result);r.onerror=rej;r.readAsDataURL(f)}); IMGF=await compress(u);$('pv').innerHTML=`<div class="pv"><img src="${IMGF}" alt=""><button id="rm">✕</button></div>`; $('rm').onclick=()=>{IMGF=null;$('pv').innerHTML=''}; toast('Photo importée','ok'); }
+async function init(){
+  navigator.storage?.persist?.();usage(); setInterval(()=>$('clk').textContent=new Date().toLocaleTimeString('fr-FR'),1000);
+  KEYS=await db.keys.toArray();$('keys').value=KEYS.map(k=>k.key+(k.rpm!==10?' '+k.rpm:'')).join('\n');tag();
+  renderChips(); renderArtistList();
+  $('artistSearch').oninput=renderArtistList; $('pool').onchange=renderArtistList;
+  $('selAll').onclick=()=>{ document.querySelectorAll('[data-artist]').forEach(cb=>{cb.checked=true; SEL_ARTISTS.add(cb.dataset.artist)}); updateSelCount(); };
+  $('selNone').onclick=()=>{ SEL_ARTISTS.clear(); renderArtistList(); };
+  $('selPhoto').onclick=()=>{ SEL_ARTISTS.clear(); MODERN_ARTISTS.filter(a=>a.cat==='photo'||a.cat==='photoportrait').forEach(a=>SEL_ARTISTS.add(a.name)); $('pool').value='photo'; renderArtistList(); };
+  $('keyBtn').onclick=()=>$('drawer').classList.toggle('on');$('kClose').onclick=()=>$('drawer').classList.remove('on');
+  $('kSave').onclick=()=>saveKeys().catch(e=>toast(e.message,'err'));$('kTest').onclick=testKeys;$('keys').onblur=()=>saveKeys().catch(()=>{});
+  $('imgIn').onchange=async e=>{if(e.target.files[0])await handleImg(e.target.files[0]);e.target.value=''};
+  const dr=$('drop');['dragenter','dragover'].forEach(v=>dr.addEventListener(v,e=>{e.preventDefault();dr.classList.add('ov')})); ['dragleave','drop'].forEach(v=>dr.addEventListener(v,e=>{e.preventDefault();dr.classList.remove('ov')}));dr.addEventListener('drop',e=>handleImg(e.dataTransfer.files[0]));
+  $('go').onclick=run;$('pause').onclick=()=>{RUN.paused=true;setUi()};$('resume').onclick=()=>{RUN.paused=false;setUi()};$('stop').onclick=()=>{RUN.stop=true;setUi()};
+  $('retry').onclick=async()=>{if(!CUR)return;await db.images.where('[batch_id+status]').equals([CUR,'error']).modify({status:'pending',error:null,attempts:0});await loadGallery();startWorkers()};
+  $('reset').onclick=async()=>{ if(!confirm('Tout effacer (batches, artistes, images) ? Les clés sont conservées.'))return; RUN.stop=true;await Promise.all([db.batches.clear(),db.artists.clear(),db.images.clear(),db.blobs.clear()]); CUR=0;ST.forEach(n=>step(n,'idle'));$('ana').classList.add('d-none');$('binfo').textContent='';await loadGallery();progress({total:0,done:0,running:0,error:0,pending:0});loadBatches();usage();toast('Base réinitialisée','ok'); };
+  $('pp').onchange=()=>{VIEW.per=+$('pp').value;VIEW.page=1;loadGallery()};$('gf').onchange=()=>{VIEW.filter=$('gf').value;VIEW.page=1;loadGallery()};
+  $('pager').onclick=e=>{const b=e.target.closest('[data-pg]');if(b&&!b.disabled){VIEW.page=+b.dataset.pg;loadGallery()}};
+  $('lb').onclick=e=>{if(e.target.id!=='lbDl')$('lb').classList.remove('on')};document.addEventListener('keydown',e=>{if(e.key==='Escape')$('lb').classList.remove('on')});
+  $('grid').onclick=async e=>{ const im=e.target.closest('.ic-img img,.v-img img');if(im){openLb(+im.dataset.id,im.dataset.r);return} const b=e.target.closest('[data-act]');if(!b)return; const id=+b.dataset.id,ta=document.querySelector(`[data-pid="${id}"]`),p=ta?.value.trim(); if(b.dataset.act==='copy'){try{await navigator.clipboard.writeText(ta.value);toast('Copié','ok')}catch(x){toast('Copie impossible','err')}} else if(!p)toast('Prompt vide','err'); else if(b.dataset.act==='save'){const r=await db.images.get(id);if(r&&['pending','error'].includes(r.status)){await db.images.update(id,{prompt:p});toast('Enregistré','ok')}} else regen(id,p); };
+  $('hist').onclick=async e=>{ const d=e.target.closest('[data-del]'); if(d){const id=+d.dataset.del;if(!confirm('Supprimer le batch #'+id+' ?'))return;await delBatch(id);if(CUR===id){CUR=0}await loadGallery();loadBatches();usage();return} const r=e.target.closest('[data-b]');if(!r)return; CUR=+r.dataset.b;VIEW.page=1;await loadGallery();loadBatches();$('binfo').textContent='Batch #'+CUR+' (chargé)'; const b=await db.batches.get(CUR);if(b?.image_desc){$('ana').textContent='🔍 '+b.image_desc;$('ana').classList.remove('d-none')}else $('ana').classList.add('d-none'); };
+  await db.images.filter(i=>i.status==='running').modify({status:'pending'});
+  const last=await db.batches.orderBy('id').last();
+  if(last){ CUR=last.id;await loadGallery();const c=VIEW.c; $('binfo').textContent=`Batch #${CUR} · ${c.done}/${c.total} faites`+(c.error?` · ${c.error} err`:''); if(last.image_desc){$('ana').textContent='🔍 '+last.image_desc;$('ana').classList.remove('d-none')} if(c.total)ST.forEach(n=>step(n,'ok')); if(c.pending&&KEYS.length){toast('Reprise auto…','ok');startWorkers()} }else await loadGallery();
+  loadBatches(); console.log('Art Studio FINAL OK -',MODERN_ARTISTS.length,'artistes modernes');
+}
+init().catch(e=>{console.error(e);toast('Erreur d’initialisation : '+e.message,'err')});
+</script><script>(function(){var loc=location.href.replace(/#.*$/,"");var ATTR_NAMES=["data-product-id","data-productid","data-product_id","product-id","productid","product_id","data-source-entity-id","source-entity-id","source_entity_id","data-product","data-metadata","data-meta"];var DATASET_KEYS=["productId","productid","product_id","sourceEntityId","sourceentityid","source_entity_id","product","metadata","meta"];function readProductId(value){if(typeof value!=="string"||value.length===0)return null;if(/^[0-9]{6,}$/.test(value))return value;var match=value.match(/(?:product(?:_|-)?id|source(?:_|-)?entity(?:_|-)?id)["'=:\s]+([0-9]{6,})/i);return match?match[1]:null}function extractProductId(start){for(var node=start;node&&node!==document.body;node=node.parentElement){for(var i=0;i<ATTR_NAMES.length;i++){var attrValue=node.getAttribute&&node.getAttribute(ATTR_NAMES[i]);var attrProductId=readProductId(attrValue);if(attrProductId)return attrProductId}var dataset=node.dataset||null;if(dataset){for(var j=0;j<DATASET_KEYS.length;j++){var dataValue=dataset[DATASET_KEYS[j]];var dataProductId=readProductId(dataValue);if(dataProductId)return dataProductId}}}return null}function isInlineMediaSlotElement(node){return !!(node&&node.getAttribute&&node.getAttribute("data-clippy-inline-media-slot")!==null)}function findInlineMediaSlot(start){for(var node=start;node&&node!==document.body;node=node.parentElement){if(isInlineMediaSlotElement(node))return node}return null}function readInlineMediaUrl(node){if(!node)return null;return node.getAttribute&&((node.getAttribute("data-clippy-inline-media-url")||node.getAttribute("data-url")||node.getAttribute("data_url")))||node.href||null}function stripHash(url){return String(url).replace(/#.*$/,"")}function urlsMatch(a,b){if(!a||!b)return false;try{return stripHash(new URL(a,loc).href)===stripHash(new URL(b,loc).href)}catch(_){return stripHash(a)===stripHash(b)}}function isFirstPartyReelUrl(value){try{var url=new URL(value,loc);if(url.protocol!=="https:")return false;var host=url.hostname.toLowerCase();var supported=host==="instagram.com"||host.endsWith(".instagram.com")||host==="facebook.com"||host.endsWith(".facebook.com");return supported&&/\/reels?\//i.test(url.pathname)}catch(_){return false}}function isInlineMediaUrlClick(node,href){var slot=findInlineMediaSlot(node);if(!slot)return false;var slotUrl=readInlineMediaUrl(slot);if(slotUrl)return urlsMatch(href,slotUrl);return isFirstPartyReelUrl(href)}function findDataHref(start){for(var node=start;node&&node!==document.body;node=node.parentElement){if(node.getAttribute){var href=node.getAttribute("data-href")||node.getAttribute("data-url");if(href)return{href:href,node:node}}}return null}var nativeOpen=window.open;window.open=function(url){if(parent!==window&&typeof url==="string"&&/^https?:\/\//.test(url)){parent.postMessage({type:"ecto:usercontent-link-click",href:url},"*");return null}return nativeOpen?nativeOpen.apply(window,arguments):null};document.addEventListener("click",function(e){var target=e.target instanceof Element?e.target:null;if(!target)return;if(parent===window)return;var a=target.closest?target.closest("a[href]"):null;if(a&&a.href&&/^https?:\/\//.test(a.href)&&a.href.replace(/#.*$/,"")!==loc){if(isInlineMediaUrlClick(a,a.href))return;var productId=extractProductId(target)||extractProductId(a);if(productId){e.preventDefault();parent.postMessage({type:"ecto-artifact-link-click",productId:productId},"*");return}e.preventDefault();parent.postMessage({type:"ecto:usercontent-link-click",href:a.href},"*");return}var dataHref=findDataHref(target);if(dataHref&&/^https?:\/\//.test(dataHref.href)&&dataHref.href.replace(/#.*$/,"")!==loc){if(isInlineMediaUrlClick(dataHref.node,dataHref.href))return;e.preventDefault();parent.postMessage({type:"ecto:usercontent-link-click",href:dataHref.href},"*")}},true)})();</script><script>(function(){var FOCUS_TYPE="ecto:artifact-focus-request";var CLOSE_TYPE="ecto:artifact-close-request";function focusArtifactDocument(){var body=document.body;if(!body)return;try{window.focus();}catch(e){}if(!body.hasAttribute("tabindex"))body.setAttribute("tabindex","-1");try{body.focus({preventScroll:true});}catch(e){try{body.focus();}catch(e2){}}}window.addEventListener("message",function(event){if(event.source!==window.parent)return;var data=event.data;if(!data||typeof data!=="object"||data.type!==FOCUS_TYPE)return;if(document.readyState==="loading"){document.addEventListener("DOMContentLoaded",focusArtifactDocument,{once:true});return;}focusArtifactDocument();});window.addEventListener("keydown",function(event){if(event.key!=="Escape")return;window.setTimeout(function(){if(event.defaultPrevented)return;window.parent.postMessage({type:CLOSE_TYPE},"*");},0);});})();</script></body></html>
